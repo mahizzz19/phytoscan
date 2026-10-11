@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PhytoScan | Potato Leaf Disease Detection</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7faf5;
+            color: #1f2933;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        nav {
+            height: 75px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #16752d;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #374151;
+            font-size: 16px;
+        }
+
+        .nav-links a:hover {
+            color: #16852f;
+        }
+
+
+        /* ================= HERO ================= */
+
+        .hero {
+            margin: 30px auto;
+            width: 90%;
+            max-width: 1200px;
+            min-height: 500px;
+
+            background: linear-gradient(
+                135deg,
+                #e8f8e6,
+                #c9efc7
+            );
+
+            border-radius: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 60px;
+            overflow: hidden;
+        }
+
+        .hero-text {
+            width: 52%;
+        }
+
+        .small-title {
+            color: #258238;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: 58px;
+            line-height: 1.05;
+            color: #075d1c;
+            margin-bottom: 25px;
+        }
+
+        .hero p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: #4b5563;
+            max-width: 520px;
+        }
+
+
+        /* ================= UPLOAD CARD ================= */
+
+        .upload-card {
+            margin-top: 30px;
+            background: white;
+            border: 2px dashed #78b77b;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .upload-card h3 {
+            color: #16752d;
+            margin-bottom: 8px;
+            font-size: 20px;
+        }
+
+        .upload-card p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .upload-input {
+            margin-top: 18px;
+        }
+
+
+        /* ================= IMAGE PREVIEW ================= */
+
+        #previewContainer {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #imagePreview {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 18px;
+            border: 3px solid #78b77b;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+
+        /* ================= BUTTON ================= */
+
+        .scan-button {
+            margin-top: 20px;
+            background: #0c8b25;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .scan-button:hover {
+            background: #076d1d;
+            transform: translateY(-2px);
+        }
+
+
+        /* ================= RESULT ================= */
+
+        .result-section {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+
+            background: white;
+            border-radius: 25px;
+
+            padding: 40px;
+
+            box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+        }
+
+        .result-title {
+            text-align: center;
+            color: #075d1c;
+            font-size: 30px;
+            margin-bottom: 30px;
+        }
+
+        .uploaded-image-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .uploaded-image-container h3 {
+            color: #16752d;
+            margin-bottom: 15px;
+        }
+
+        .uploaded-image {
+            width: 280px;
+            height: 280px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid #78b77b;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .prediction {
+            text-align: center;
+            font-size: 25px;
+            font-weight: bold;
+            color: #16752d;
+            margin-bottom: 15px;
+        }
+
+        .confidence {
+            text-align: center;
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .recommendations {
+            background: #f0f8ed;
+            padding: 25px;
+            border-radius: 18px;
+        }
+
+        .recommendations h3 {
+            color: #16752d;
+            margin-bottom: 15px;
+        }
+
+        .recommendations li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .another-button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .another-button {
+            display: inline-block;
+            background: #0c8b25;
+            color: white;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .another-button:hover {
+            background: #076d1d;
+        }
+
+
+        /* ================= ERROR ================= */
+
+        .error {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+
+            background: #fff0f0;
+            color: #b42318;
+
+            padding: 20px;
+            border-radius: 15px;
+
+            text-align: center;
+        }
+
+
+        /* ================= SECTION ================= */
+
+        .section {
+            width: 90%;
+            max-width: 1200px;
+            margin: 60px auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 32px;
+            color: #075d1c;
+            margin-bottom: 30px;
+        }
+
+
+        /* ================= CARDS ================= */
+
+        .cards {
+            display: flex;
+            gap: 25px;
+        }
+
+        .card {
+            flex: 1;
+
+            background: white;
+
+            border-radius: 20px;
+
+            padding: 30px;
+
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.10);
+        }
+
+        .card h3 {
+            color: #16752d;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            margin-top: 70px;
+            background: #eaf6e7;
+            padding: 30px;
+            text-align: center;
+            color: #36703d;
+        }
+
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 800px) {
+
+            nav {
+                padding: 0 5%;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                flex-direction: column;
+                padding: 35px 25px;
+                text-align: center;
+            }
+
+            .hero-text {
+                width: 100%;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero p {
+                margin: auto;
+            }
+
+            .upload-card {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .leaf-container {
+                width: 100%;
+                margin-top: 40px;
+            }
+
+            .leaf {
+                width: 230px;
+                height: 280px;
+            }
+
+            .cards {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav>
+
+        <div class="logo">
+            🌿 PhytoScan
+        </div>
+
+        <div class="nav-links">
+
+            <a href="/">Home</a>
+            <a href="#about">About</a>
+            <a href="#diseases">Diseases</a>
+            <a href="#management">Management</a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- ================= HERO ================= -->
+
+    <section class="hero">
+
+        <div class="hero-text">
+
+            <div class="small-title">
+                AI-POWERED POTATO LEAF ANALYSIS
+            </div>
+
+            <h1>
+                PhytoScan
+            </h1>
+
+            <p>
+                Upload a potato leaf image and let our
+                deep learning model identify possible
+                diseases and provide useful management
+                recommendations.
+            </p>
+
+
+            <!-- ================= UPLOAD FORM ================= -->
+
+            <form
+                action="/"
+                method="POST"
+                enctype="multipart/form-data"
+                class="upload-card"
+            >
+
+                <h3>
+                    🌱 Upload a Leaf Image
+                </h3>
+
+                <p>
+                    JPG, JPEG or PNG
+                </p>
+
+                <input
+                    class="upload-input"
+                    type="file"
+                    id="leafImage"
+                    name="leaf_image"
+                    accept="image/*"
+                    required
+                >
+
+
+                <!-- IMAGE PREVIEW -->
+
+                <div id="previewContainer">
+
+                    <img
+                        id="imagePreview"
+                        src=""
+                        alt="Selected potato leaf"
+                    >
+
+                </div>
+
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="scan-button"
+                >
+                    📷 Scan a Leaf
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- Decorative leaf -->
+
+        <div class="leaf-container">
+
+            <div class="leaf">
+
+                <div class="spot spot1"></div>
+                <div class="spot spot2"></div>
+                <div class="spot spot3"></div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= ERROR ================= -->
+
+    {% if error %}
+
+    <div class="error">
+        {{ error }}
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================= RESULT ================= -->
+
+    {% if prediction %}
+
+    <section class="result-section">
+
+        <h2 class="result-title">
+            🔬 PhytoScan Diagnosis
+        </h2>
+
+
+        <!-- Uploaded image -->
+
+        {% if image_url %}
+
+        <div class="uploaded-image-container">
+
+            <h3>
+                🖼️ Uploaded Leaf
+            </h3>
+
+            <img
+                src="{{ image_url }}"
+                alt="Uploaded potato leaf"
+                class="uploaded-image"
+            >
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- Prediction -->
+
+        <div class="prediction">
+
+            Prediction:
+
+            {{ prediction
+                .replace("Potato___", "")
+                .replace("_", " ")
+            }}
+
+        </div>
+
+
+        <!-- Confidence -->
+
+        <div class="confidence">
+
+            Confidence:
+
+            {{ "%.2f"|format(confidence) }}%
+
+        </div>
+
+
+        <!-- Management -->
+
+        {% if recommendations %}
+
+        <div class="recommendations">
+
+            <h3>
+                🌱 Management Recommendations
+            </h3>
+
+            <ul>
+
+                {% for item in recommendations %}
+
+                <li>
+                    {{ item }}
+                </li>
+
+                {% endfor %}
+
+            </ul>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- Scan another leaf -->
+
+        <div class="another-button-container">
+
+            <a
+                href="/"
+                class="another-button"
+            >
+                🔄 Scan Another Leaf
+            </a>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- ================= DISEASES ================= -->
+
+    <section
+        class="section"
+        id="diseases"
+    >
+
+        <h2 class="section-title">
+            What Can PhytoScan Detect?
+        </h2>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <h3>
+                    🍂 Early Blight
+                </h3>
+
+                <p>
+                    Detects potato leaves affected by
+                    Early Blight using the trained CNN model.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    🍃 Late Blight
+                </h3>
+
+                <p>
+                    Identifies visual patterns associated
+                    with Late Blight in potato leaves.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    🌿 Healthy
+                </h3>
+
+                <p>
+                    Identifies healthy potato leaves that
+                    do not show disease patterns learned
+                    by the model.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= MANAGEMENT ================= -->
+
+    <section
+        class="section"
+        id="management"
+    >
+
+        <h2 class="section-title">
+            🌱 Smart Management Recommendations
+        </h2>
+
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <h3>
+                    Early Detection
+                </h3>
+
+                <p>
+                    Detecting disease early can help reduce
+                    its spread and support timely management.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    Management Guidance
+                </h3>
+
+                <p>
+                    PhytoScan provides disease-specific
+                    management recommendations after prediction.
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>
+                    Easy to Use
+                </h3>
+
+                <p>
+                    Simply upload a leaf image and receive
+                    an easy-to-understand result.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= ABOUT ================= -->
+
+    <section
+        class="section"
+        id="about"
+    >
+
+        <h2 class="section-title">
+            About PhytoScan
+        </h2>
+
+
+        <div class="card">
+
+            <p>
+
+                PhytoScan is a web-based potato leaf disease
+                detection system that uses a Convolutional
+                Neural Network (CNN) to classify potato leaves
+                as Early Blight, Late Blight, or Healthy.
+                The system also provides management
+                recommendations based on the predicted disease.
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        🌿 <strong>PhytoScan</strong>
+
+        <br><br>
+
+        AI-powered potato leaf disease detection and management
+
+    </footer>
+
+
+    <!-- ================= IMAGE PREVIEW SCRIPT ================= -->
+
+    <script>
+
+        const imageInput =
+            document.getElementById("leafImage");
+
+        const imagePreview =
+            document.getElementById("imagePreview");
+
+        const previewContainer =
+            document.getElementById("previewContainer");
+
+
+        imageInput.addEventListener(
+            "change",
+            function () {
+
+                const file = this.files[0];
+
+                if (file) {
+
+                    const reader =
+                        new FileReader();
+
+                    reader.onload =
+                        function (event) {
+
+                            imagePreview.src =
+                                event.target.result;
+
+                            previewContainer.style.display =
+                                "block";
+
+                        };
+
+                    reader.readAsDataURL(file);
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>
